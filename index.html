@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Klasstavlan</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#18181b;--paper:#fafaf9;--surface:#f4f4f0;--border:#e4e4de;
+  --accent:#2563eb;--accent-soft:#eff6ff;--accent-muted:#bfdbfe;
+  --green:#16a34a;--green-soft:#f0fdf4;--red:#dc2626;--amber:#d97706;
+  --purple:#7c3aed;--text:#18181b;--muted:#71717a;--muted2:#a1a1aa;
+  --panel:272px;
+}
+html,body{height:100%;overflow:hidden;font-family:'DM Mono',monospace;background:var(--surface);color:var(--text);}
+#app{display:flex;height:100vh;}
+
+/* ── SIDEBAR ── */
+#sidebar{width:var(--panel);background:var(--paper);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
+.sb-head{padding:11px 14px 8px;border-bottom:1px solid var(--border);}
+.sb-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;}
+.sb-sub{font-size:10px;color:var(--muted2);margin-top:1px;}
+.sb-conn{display:flex;align-items:center;gap:4px;margin-top:3px;}
+.cdot{width:7px;height:7px;border-radius:50%;background:var(--muted2);}
+.cdot.on{background:var(--green);}
+.clbl{font-size:10px;color:var(--muted2);}
+
+.tabs{display:flex;border-bottom:1px solid var(--border);}
+.tab{flex:1;padding:7px 3px;font-family:'Syne',sans-serif;font-size:10px;font-weight:700;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;letter-spacing:.02em;}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+.sb-body{flex:1;overflow-y:auto;}
+.sec{padding:7px 14px 3px;font-size:10px;font-weight:500;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;}
+
+.blk{padding:8px 14px;border-bottom:1px solid var(--border);}
+.blk label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;}
+.inp{width:100%;padding:6px 9px;font-family:'DM Mono',monospace;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);outline:none;}
+.inp:focus{border-color:var(--accent);}
+.row{display:flex;gap:6px;}
+.row .inp{flex:1;}
+.btn{padding:6px 11px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;border:none;border-radius:6px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn.p{background:var(--accent);color:#fff;}.btn.p:hover{opacity:.88;}
+.btn.d{background:var(--red);color:#fff;}
+.btn.s{background:var(--surface);color:var(--ink);border:1px solid var(--border);}.btn.s:hover{background:var(--border);}
+.btn.g{background:var(--green);color:#fff;}
+.btn.a{background:var(--amber);color:#fff;}
+
+.tog-row{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-bottom:1px solid var(--border);}
+.tog-lbl{font-size:12px;}
+.tog{width:34px;height:18px;border-radius:9px;border:none;cursor:pointer;position:relative;transition:background .2s;background:var(--border);}
+.tog.on{background:var(--green);}
+.tog::after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:2px;left:2px;transition:left .2s;}
+.tog.on::after{left:18px;}
+.pin{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-family:'Syne',sans-serif;font-size:17px;font-weight:700;text-align:center;letter-spacing:.15em;color:var(--accent);margin:6px 14px;}
+
+/* STUDENT ITEMS */
+.si{padding:7px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;cursor:pointer;transition:background .1s;}
+.si:hover{background:var(--surface);}
+.av{width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
+.sn{font-size:12px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sbadge{font-size:9px;padding:2px 5px;border-radius:4px;font-weight:600;}
+.b-sh{background:#dbeafe;color:#1e40af;}
+.b-ow{background:#d1fae5;color:#065f46;}
+.b-gr{background:#fef3c7;color:#92400e;}
+.no-s{padding:18px 14px;text-align:center;font-size:12px;color:var(--muted2);}
+
+/* INDIV PERMS */
+.ip-panel{background:var(--accent-soft);border-bottom:1px solid var(--accent-muted);padding:10px 14px;}
+.ip-title{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--accent);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.ip-close{background:none;border:none;cursor:pointer;font-size:14px;color:var(--muted);line-height:1;}
+.ip-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.ip-row span{font-size:11px;}
+.ip-ws{font-size:10px;color:var(--muted2);margin-bottom:6px;font-style:italic;}
+
+/* GROUP PANEL */
+.gp-card{background:white;border:1px solid var(--border);border-radius:8px;margin:6px 14px;padding:8px 10px;}
+.gp-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--ink);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;}
+.gp-members{font-size:11px;color:var(--muted);line-height:1.6;}
+
+/* CHAT */
+.chat-wrap{display:flex;flex-direction:column;height:100%;}
+.chat-msgs{flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:6px;}
+.chat-msg{background:var(--surface);border-radius:8px;padding:6px 10px;font-size:12px;line-height:1.4;}
+.chat-msg .cm-who{font-weight:700;font-size:10px;color:var(--accent);margin-bottom:2px;}
+.chat-msg.mine{background:var(--accent-soft);align-self:flex-end;max-width:85%;}
+.chat-msg.mine .cm-who{color:var(--purple);}
+.chat-input-row{display:flex;gap:6px;padding:8px 14px;border-top:1px solid var(--border);}
+.chat-input-row .inp{flex:1;font-size:12px;}
+
+/* ── MAIN ── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+#toolbar{height:46px;background:var(--paper);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:4px;flex-shrink:0;}
+.tg{display:flex;align-items:center;gap:2px;padding:0 5px;border-right:1px solid var(--border);}
+.tg:last-child{border-right:none;}
+.tb{width:31px;height:31px;border-radius:6px;border:1px solid transparent;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .1s;flex-shrink:0;}
+.tb:hover{background:var(--surface);}
+.tb.active{background:var(--accent-soft);border-color:var(--accent-muted);}
+.tb svg{width:15px;height:15px;stroke:var(--text);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.tb.active svg{stroke:var(--accent);}
+.csw{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);cursor:pointer;transition:transform .1s;flex-shrink:0;}
+.csw.active{border-color:var(--ink);transform:scale(1.25);}
+.sbtn{width:26px;height:26px;border-radius:5px;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--muted);}
+.sbtn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.tsp{flex:1;}
+.ws-lbl{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.ws-chip{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;}
+.lbtn{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:4px 9px;border-radius:5px;cursor:pointer;border:none;transition:all .15s;}
+.lbtn.locked{background:#fef2f2;color:var(--red);border:1px solid #fecaca;}
+.lbtn.unlocked{background:var(--green-soft);color:var(--green);border:1px solid #bbf7d0;}
+.lbtn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ── CANVAS AREA ── */
+#canvas-area{flex:1;position:relative;overflow:hidden;background:#e8e8e2;background-image:radial-gradient(circle,#c8c8c0 1px,transparent 1px);background-size:24px 24px;}
+#canvas{position:absolute;top:0;left:0;touch-action:none;}
+#canvas.c-pen{cursor:crosshair;}
+#canvas.c-text{cursor:text;}
+#canvas.c-erase{cursor:cell;}
+#canvas.c-shape{cursor:crosshair;}
+#canvas.c-select{cursor:default;}
+#canvas.c-flow{cursor:crosshair;}
+#canvas.locked{cursor:not-allowed;pointer-events:none;}
+
+/* ── OBJECTS ── */
+.cobj{position:absolute;background:var(--paper);border:1.5px solid var(--accent);border-radius:10px;padding:9px 12px;min-width:130px;max-width:250px;user-select:none;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.cobj.draggable{cursor:move;}
+.cobj .oh{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--accent);margin-bottom:3px;letter-spacing:.04em;}
+.cobj .ob{font-size:12px;line-height:1.5;}
+.cobj .ob a{color:var(--accent);text-decoration:underline;}
+.cobj.type-q{border-color:var(--purple);background:#faf5ff;}.cobj.type-q .oh{color:var(--purple);}
+.cobj.type-info{border-color:var(--green);background:var(--green-soft);}.cobj.type-info .oh{color:var(--green);}
+.cobj .odl{position:absolute;top:5px;right:7px;background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted2);line-height:1;opacity:0;transition:opacity .1s;}
+.cobj:hover .odl{opacity:1;}
+
+/* TEXT NODE */
+.tnode{position:absolute;background:rgba(255,255,255,.95);border:1.5px solid var(--border);border-radius:6px;padding:4px 8px;font-family:'DM Mono',monospace;font-size:13px;user-select:none;cursor:move;box-shadow:0 1px 4px rgba(0,0,0,.07);min-width:60px;}
+.tnode.selected{border-color:var(--accent);}
+.tnode .tdl{position:absolute;top:-7px;right:-7px;width:16px;height:16px;border-radius:50%;background:var(--red);color:#fff;border:none;cursor:pointer;font-size:11px;line-height:16px;text-align:center;opacity:0;transition:opacity .1s;}
+.tnode:hover .tdl{opacity:1;}
+
+/* IMAGE OBJ */
+.iobj{position:absolute;cursor:move;user-select:none;}
+.iobj img{display:block;border-radius:4px;max-width:280px;}
+.iobj .idl{position:absolute;top:-7px;right:-7px;width:16px;height:16px;border-radius:50%;background:var(--red);color:#fff;border:none;cursor:pointer;font-size:11px;line-height:16px;text-align:center;opacity:0;transition:opacity .1s;}
+.iobj:hover .idl{opacity:1;}
+
+/* FLOW NODES */
+.fnode{position:absolute;cursor:move;user-select:none;}
+.fnode-inner{background:var(--accent-soft);border:2px solid var(--accent);border-radius:8px;padding:8px 14px;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--accent);text-align:center;min-width:80px;white-space:nowrap;position:relative;}
+.fnode-inner.diamond{transform:rotate(45deg);padding:14px;}
+.fnode-inner.diamond span{display:block;transform:rotate(-45deg);}
+.fnode-inner.circle-node{border-radius:50%;width:70px;height:70px;display:flex;align-items:center;justify-content:center;padding:4px;}
+.fnode .fdl{position:absolute;top:-8px;right:-8px;width:17px;height:17px;border-radius:50%;background:var(--red);color:#fff;border:none;cursor:pointer;font-size:11px;line-height:17px;text-align:center;opacity:0;transition:opacity .1s;z-index:2;}
+.fnode:hover .fdl{opacity:1;}
+.fnode .fport{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid #fff;cursor:crosshair;z-index:3;transition:transform .1s;}
+.fnode .fport:hover{transform:scale(1.4);}
+.fport-t{top:-5px;left:50%;transform:translateX(-50%);}
+.fport-b{bottom:-5px;left:50%;transform:translateX(-50%);}
+.fport-l{left:-5px;top:50%;transform:translateY(-50%);}
+.fport-r{right:-5px;top:50%;transform:translateY(-50%);}
+
+/* CANVAS TEXT INPUT */
+.cti{position:absolute;background:rgba(255,255,255,.95);border:1.5px solid var(--accent);border-radius:4px;outline:none;font-family:'DM Mono',monospace;padding:3px 7px;z-index:20;}
+
+/* ELEVKOLL */
+#ek-area{flex:1;display:none;padding:14px;overflow-y:auto;background:var(--surface);}
+#ek-area.show{display:block;}
+.ek-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+.ek-card{background:var(--paper);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.ek-head{padding:7px 10px;background:var(--ink);display:flex;align-items:center;gap:7px;}
+.ek-av{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;}
+.ek-name{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#fff;flex:1;}
+.ek-ws{display:flex;gap:3px;}
+.ek-ws-btn{font-size:9px;padding:2px 5px;border-radius:3px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.6);cursor:pointer;font-family:'Syne',sans-serif;font-weight:600;transition:all .1s;}
+.ek-ws-btn.active{background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.4);}
+.ek-wrap{height:150px;background:#e8e8e2;background-image:radial-gradient(circle,#c8c8c0 1px,transparent 1px);background-size:12px 12px;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.ek-wrap img{width:100%;height:100%;object-fit:contain;display:block;}
+.ek-empty{font-size:11px;color:var(--muted2);}
+
+/* FLOW SVG OVERLAY */
+#flow-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;}
+.flow-edge{stroke:var(--accent);stroke-width:2;fill:none;marker-end:url(#arrow-head);}
+.flow-edge-sel{stroke:var(--purple);stroke-width:2.5;}
+
+/* LOGIN */
+#gate{position:fixed;inset:0;background:rgba(250,250,249,.97);display:flex;align-items:center;justify-content:center;z-index:999;}
+.gc{background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:26px 34px;max-width:330px;width:90%;text-align:center;}
+.gc h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:4px;}
+.gc p{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.gc input{width:100%;padding:9px 12px;font-family:'Syne',sans-serif;font-size:15px;text-align:center;letter-spacing:.07em;border:1.5px solid var(--border);border-radius:8px;outline:none;margin-bottom:6px;}
+.gc input:focus{border-color:var(--accent);}
+.gc-btn{width:100%;padding:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;margin-top:2px;}
+.gc-err{font-size:12px;color:var(--red);min-height:14px;margin-top:3px;}
+.mc{display:flex;gap:5px;margin-bottom:9px;}
+.mc-btn{flex:1;padding:7px 3px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;font-family:'Syne',sans-serif;font-size:10px;font-weight:700;background:transparent;color:var(--muted);transition:all .15s;}
+.mc-btn.active{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);}
+
+/* TOAST */
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-family:'Syne',sans-serif;font-weight:600;transition:transform .25s;z-index:1000;pointer-events:none;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="gate">
+  <div class="gc">
+    <h2>Klasstavlan</h2>
+    <p>Välj yta, ange namn och PIN</p>
+    <div class="mc">
+      <button class="mc-btn active" onclick="pickMode(this,'shared')">Delad</button>
+      <button class="mc-btn" onclick="pickMode(this,'own')">Min yta</button>
+      <button class="mc-btn" onclick="pickMode(this,'group')">Grupp</button>
+    </div>
+    <input type="text" id="gGroup" placeholder="Gruppnamn..." style="display:none;font-size:13px;"/>
+    <input type="text" id="gName" placeholder="Ditt namn" style="text-transform:uppercase;"/>
+    <input type="password" id="gPin" placeholder="PIN" maxlength="8"/>
+    <div class="gc-err" id="gErr"></div>
+    <button class="gc-btn" onclick="enterApp()">Gå in</button>
+    <p style="margin-top:9px;font-size:10px;color:var(--muted2);">Elev: <strong>1234</strong> &nbsp;·&nbsp; Lärare: <strong>LARARE</strong></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;">
+  <div id="sidebar">
+    <div class="sb-head">
+      <div class="sb-title">Klasstavlan</div>
+      <div class="sb-sub" id="sbSub"></div>
+      <div class="sb-conn"><span class="cdot" id="cdot"></span><span class="clbl" id="clbl">Ansluter...</span></div>
+    </div>
+    <div class="tabs" id="teacherTabs" style="display:none;">
+      <button class="tab active" onclick="goTab('kontroll',this)">Kontroll</button>
+      <button class="tab" onclick="goTab('elever',this)">Elever</button>
+      <button class="tab" onclick="goTab('grupper',this)">Grupper</button>
+      <button class="tab" onclick="goTab('elevkoll',this)">Elevkoll</button>
+    </div>
+    <div class="tabs" id="studentTabs" style="display:none;">
+      <button class="tab active" onclick="goTab('minyta',this)">Min yta</button>
+      <button class="tab" onclick="goTab('chatt',this)">Chatt</button>
+    </div>
+    <div class="sb-body" id="sbBody">
+
+      <!-- KONTROLL -->
+      <div id="tab-kontroll">
+        <div class="blk">
+          <label>Lägg till på ytan</label>
+          <select id="taskType" class="inp" style="margin-bottom:5px;">
+            <option value="q">❓ Fråga</option>
+            <option value="task">📋 Uppgift</option>
+            <option value="info">ℹ️ Info</option>
+          </select>
+          <div class="row"><input type="text" id="taskText" class="inp" placeholder="Text..."/><button class="btn p" onclick="addObj()">+</button></div>
+        </div>
+        <div class="blk">
+          <label>Bakgrundsbild (URL)</label>
+          <div class="row"><input type="text" id="bgUrl" class="inp" placeholder="https://..."/><button class="btn s" onclick="setBg()">OK</button></div>
+        </div>
+        <div class="blk"><label>Elevkod</label><div class="pin">1234</div></div>
+        <div class="sec">Rättigheter per yta</div>
+        <div class="blk">
+          <label style="margin-bottom:6px;">Gäller: <select id="permWs" class="inp" style="display:inline;width:auto;padding:3px 6px;" onchange="renderPermToggles()"><option value="shared">Delad</option><option value="own">Egen</option><option value="group">Grupp</option></select></label>
+          <div class="tog-row" style="padding:4px 0;border:none;"><span class="tog-lbl">Rita</span><button class="tog on" id="tog-draw" onclick="setGlobalPerm('draw',this)"></button></div>
+          <div class="tog-row" style="padding:4px 0;border:none;"><span class="tog-lbl">Skriva</span><button class="tog on" id="tog-write" onclick="setGlobalPerm('write',this)"></button></div>
+          <div class="tog-row" style="padding:4px 0;border:none;"><span class="tog-lbl">Flytta</span><button class="tog on" id="tog-move" onclick="setGlobalPerm('move',this)"></button></div>
+        </div>
+        <div class="blk" style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn d" onclick="clearAll()">Rensa yta</button>
+          <button class="btn s" onclick="exportPNG()">PNG</button>
+        </div>
+      </div>
+
+      <!-- ELEVER -->
+      <div id="tab-elever" style="display:none;">
+        <div class="sec">Online just nu</div>
+        <div id="studentList"><div class="no-s">Inga elever online</div></div>
+        <div id="indivPanel" style="display:none;"></div>
+      </div>
+
+      <!-- GRUPPER -->
+      <div id="tab-grupper" style="display:none;">
+        <div class="blk">
+          <label>Slumpa grupper</label>
+          <div class="row">
+            <input type="number" id="groupCount" class="inp" placeholder="Antal grupper" min="2" max="10" value="3"/>
+            <button class="btn p" onclick="shuffleGroups()">Slumpa</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:5px;">Slumpar inloggade elever</div>
+        </div>
+        <div class="blk"><button class="btn d" style="width:100%;" onclick="clearGroups()">Rensa alla grupper</button></div>
+        <div id="groupList"></div>
+      </div>
+
+      <!-- ELEVKOLL sidebar -->
+      <div id="tab-elevkoll" style="display:none;">
+        <div class="blk" style="font-size:12px;color:var(--muted);">Elevernas ytor visas live till höger.</div>
+      </div>
+
+      <!-- MIN YTA (student) -->
+      <div id="tab-minyta" style="display:none;">
+        <div class="blk">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Inloggad som</div>
+          <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;" id="sNameDisp"></div>
+          <div id="sModeDisp" style="font-size:11px;color:var(--muted2);margin-top:2px;"></div>
+        </div>
+        <div class="blk">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Byt arbetsyta:</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <button class="btn s" onclick="switchWS('shared')">Delad</button>
+            <button class="btn s" onclick="switchWS('own')">Min yta</button>
+            <button class="btn s" onclick="switchWS('group')">Grupp</button>
+          </div>
+        </div>
+        <div class="sec">Dina rättigheter</div>
+        <div id="permDisp" style="padding:6px 14px;"></div>
+      </div>
+
+      <!-- CHATT (student) -->
+      <div id="tab-chatt" style="display:none;height:calc(100vh - 120px);">
+        <div class="chat-wrap">
+          <div class="chat-msgs" id="chatMsgs"></div>
+          <div class="chat-input-row">
+            <input type="text" class="inp" id="chatInput" placeholder="Skriv meddelande..." onkeydown="if(event.key==='Enter')sendChat()"/>
+            <button class="btn p" onclick="sendChat()">↑</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div id="toolbar">
+      <div class="tg">
+        <button class="tb active" id="tool-select" onclick="setTool('select')" title="Markera/flytta (V)">
+          <svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7z"/></svg>
+        </button>
+        <button class="tb" id="tool-pen" onclick="setTool('pen')" title="Penna (P)">
+          <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </button>
+        <button class="tb" id="tool-text" onclick="setTool('text')" title="Text (T)">
+          <svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+        </button>
+        <button class="tb" id="tool-shape" onclick="setTool('shape')" title="Former (S)">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </button>
+        <button class="tb" id="tool-flow" onclick="setTool('flow')" title="Flödesschema (F)">
+          <svg viewBox="0 0 24 24"><rect x="2" y="8" width="8" height="5" rx="1"/><rect x="14" y="8" width="8" height="5" rx="1"/><line x1="10" y1="10.5" x2="14" y2="10.5"/><line x1="14" y1="10.5" x2="12" y2="8.5"/><line x1="14" y1="10.5" x2="12" y2="12.5"/></svg>
+        </button>
+        <button class="tb" id="tool-erase" onclick="setTool('erase')" title="Sudda (E)">
+          <svg viewBox="0 0 24 24"><path d="M20 20H7L3 16l13-13 7 7z"/><line x1="6" y1="20" x2="20" y2="20"/></svg>
+        </button>
+      </div>
+      <div class="tg" id="shapeOpts" style="display:none;gap:3px;">
+        <button class="sbtn active" data-shape="line" onclick="setShape(this,'line')">╱</button>
+        <button class="sbtn" data-shape="rect" onclick="setShape(this,'rect')">▭</button>
+        <button class="sbtn" data-shape="circle" onclick="setShape(this,'circle')">◯</button>
+        <button class="sbtn" data-shape="arrow" onclick="setShape(this,'arrow')">→</button>
+      </div>
+      <div class="tg" id="flowOpts" style="display:none;gap:3px;">
+        <button class="sbtn active" data-fshape="rect" onclick="setFShape(this,'rect')">▭</button>
+        <button class="sbtn" data-fshape="diamond" onclick="setFShape(this,'diamond')">◇</button>
+        <button class="sbtn" data-fshape="circle" onclick="setFShape(this,'circle')">◯</button>
+      </div>
+      <div class="tg">
+        <div class="csw active" style="background:#18181b;" data-color="#18181b" onclick="setColor(this)"></div>
+        <div class="csw" style="background:#2563eb;" data-color="#2563eb" onclick="setColor(this)"></div>
+        <div class="csw" style="background:#dc2626;" data-color="#dc2626" onclick="setColor(this)"></div>
+        <div class="csw" style="background:#16a34a;" data-color="#16a34a" onclick="setColor(this)"></div>
+        <div class="csw" style="background:#d97706;" data-color="#d97706" onclick="setColor(this)"></div>
+        <div class="csw" style="background:#7c3aed;" data-color="#7c3aed" onclick="setColor(this)"></div>
+        <div class="csw" style="background:#fff;border-color:#aaa;" data-color="#ffffff" onclick="setColor(this)"></div>
+      </div>
+      <div class="tg">
+        <button class="sbtn active" data-sz="2" onclick="setSz(this,2)">S</button>
+        <button class="sbtn" data-sz="5" onclick="setSz(this,5)">M</button>
+        <button class="sbtn" data-sz="12" onclick="setSz(this,12)">L</button>
+      </div>
+      <div class="tg">
+        <button class="tb" onclick="undo()" title="Ångra (Ctrl+Z)">
+          <svg viewBox="0 0 24 24"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>
+        </button>
+        <button class="tb" onclick="trigImg()" title="Ladda upp bild">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </button>
+        <input type="file" id="imgFile" accept="image/*" style="display:none;" onchange="handleImgFile(event)"/>
+      </div>
+      <div class="tsp"></div>
+      <div class="ws-lbl">
+        <span id="wsLbl">Delad yta</span>
+        <span class="ws-chip b-sh" id="wsChip">DELAD</span>
+      </div>
+      <button class="lbtn unlocked" id="lockBtn" onclick="toggleLock()">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Upplåst
+      </button>
+    </div>
+
+    <div style="flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column;">
+      <div id="canvas-area">
+        <svg id="flow-svg">
+          <defs>
+            <marker id="arrow-head" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#2563eb"/>
+            </marker>
+          </defs>
+        </svg>
+        <canvas id="canvas" class="c-select"></canvas>
+      </div>
+      <div id="ek-area">
+        <div class="ek-grid" id="ekGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, push, onValue, remove, update, off, onDisconnect }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FB = {
+  apiKey:"AIzaSyBZyQPE6c9z3BNx9aSX17CWhS1GdqVh6ls",
+  authDomain:"klasstavlan.firebaseapp.com",
+  databaseURL:"https://klasstavlan-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"klasstavlan",
+  storageBucket:"klasstavlan.firebasestorage.app",
+  messagingSenderId:"928475887376",
+  appId:"1:928475887376:web:b3dd275ab3fb8dada51795"
+};
+const fbApp = initializeApp(FB);
+const db = getDatabase(fbApp);
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+const S = {
+  role:'teacher', user:'', ws:'shared', group:'',
+  isLocked:false,
+  perms:{ shared:{draw:true,write:true,move:true}, own:{draw:true,write:true,move:true}, group:{draw:true,write:true,move:true} },
+  tool:'select', color:'#18181b', sz:2, shape:'line', fshape:'rect',
+  drawing:false, lastX:0, lastY:0, shapeStart:null,
+  currentTab:'kontroll',
+  selectedNode:null,
+  connectingFrom:null,
+};
+let canvas, ctx;
+let snapshotImg = null;
+let shapeSnap = null;
+let undoHist = [];
+let snapTimer = null;
+let activeListeners = [];
+let ekListeners = {};
+let onlineStudents = [];
+let loginMode = 'shared';
+const AC = ['#2563eb','#dc2626','#16a34a','#d97706','#7c3aed','#0891b2','#be185d'];
+
+// ── PATHS ──────────────────────────────────────────────────────────────────
+function wsRoot(ws, grp) {
+  ws = ws || S.ws; grp = grp || S.group;
+  if (ws==='own') return `ws/own/${S.user}`;
+  if (ws==='group') return `ws/group/${grp||'default'}`;
+  return 'ws/shared';
+}
+const P = {
+  snap: (ws,g) => wsRoot(ws,g)+'/snapshot',
+  objs: (ws,g) => wsRoot(ws,g)+'/objects',
+  fnodes: (ws,g) => wsRoot(ws,g)+'/fnodes',
+  fedges: (ws,g) => wsRoot(ws,g)+'/fedges',
+  tnodes: (ws,g) => wsRoot(ws,g)+'/tnodes',
+  lock: 'settings/lock',
+  gperms: ws => `settings/perms/${ws}`,
+  uperms: u => `settings/userPerms/${u}`,
+  presence: u => `presence/${u}`,
+  groups: 'groups',
+  chat: grp => `chat/${grp||'default'}`,
+};
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+function init() {
+  canvas = document.getElementById('canvas');
+  ctx = canvas.getContext('2d');
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  canvas.addEventListener('mousedown', onDown);
+  canvas.addEventListener('mousemove', onMove);
+  canvas.addEventListener('mouseup', onUp);
+  canvas.addEventListener('mouseleave', onUp);
+  canvas.addEventListener('touchstart', e=>{e.preventDefault();onDown(e.touches[0]);},{passive:false});
+  canvas.addEventListener('touchmove', e=>{e.preventDefault();onMove(e.touches[0]);},{passive:false});
+  canvas.addEventListener('touchend', e=>{e.preventDefault();onUp();},{passive:false});
+  document.addEventListener('keydown', e=>{
+    if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}
+    if((e.ctrlKey||e.metaKey)&&e.key==='v'){handlePaste(e);}
+    if(e.key==='v'&&!isTyping())setTool('select');
+    if(e.key==='p'&&!isTyping())setTool('pen');
+    if(e.key==='t'&&!isTyping())setTool('text');
+    if(e.key==='s'&&!isTyping())setTool('shape');
+    if(e.key==='f'&&!isTyping())setTool('flow');
+    if(e.key==='e'&&!isTyping())setTool('erase');
+  });
+  document.addEventListener('paste', handlePaste);
+  canvas.addEventListener('click',e=>{
+    if(S.tool!=='flow')return;
+    if(!canDo('draw'))return;
+    const p=getPos(e);
+    push(ref(db,P.fnodes()),{shape:fshapeSelected,x:p.x-60,y:p.y-20,label:'Node',color:S.color,by:S.user,ts:Date.now()});
+  });
+  setupListeners();
+  setupPresence();
+  document.getElementById('cdot').className='cdot on';
+  document.getElementById('clbl').textContent='Ansluten';
+}
+
+function isTyping() {
+  const t = document.activeElement?.tagName;
+  return t==='INPUT'||t==='TEXTAREA';
+}
+
+function resizeCanvas() {
+  if(!canvas)return;
+  const area = document.getElementById('canvas-area');
+  const dpr = window.devicePixelRatio||1;
+  const w=area.clientWidth, h=area.clientHeight;
+  canvas.width=w*dpr; canvas.height=h*dpr;
+  canvas.style.width=w+'px'; canvas.style.height=h+'px';
+  ctx.scale(dpr,dpr);
+  redrawCanvas();
+}
+
+// ── FIREBASE LISTENERS ─────────────────────────────────────────────────────
+function clearListeners() { activeListeners.forEach(fn=>fn()); activeListeners=[]; }
+
+function setupListeners() {
+  clearListeners();
+  // Snapshot
+  const sr = ref(db, P.snap());
+  onValue(sr, snap=>{
+    const d=snap.val();
+    if(!d||!d.img){snapshotImg=null;redrawCanvas();return;}
+    const img=new Image();
+    img.onload=()=>{snapshotImg=img;redrawCanvas();};
+    img.src=d.img;
+  });
+  activeListeners.push(()=>off(sr));
+
+  // Objects
+  const or = ref(db, P.objs());
+  onValue(or, snap=>{
+    document.querySelectorAll('.cobj').forEach(e=>e.remove());
+    const d=snap.val()||{};
+    Object.entries(d).forEach(([k,v])=>renderObj(k,v));
+  });
+  activeListeners.push(()=>off(or));
+
+  // Text nodes
+  const tr = ref(db, P.tnodes());
+  onValue(tr, snap=>{
+    document.querySelectorAll('.tnode').forEach(e=>e.remove());
+    const d=snap.val()||{};
+    Object.entries(d).forEach(([k,v])=>renderTnode(k,v));
+  });
+  activeListeners.push(()=>off(tr));
+
+  // Image objects
+  const ir = ref(db, P.objs()+'_img');
+  onValue(ir, snap=>{
+    document.querySelectorAll('.iobj').forEach(e=>e.remove());
+    const d=snap.val()||{};
+    Object.entries(d).forEach(([k,v])=>renderImgObj(k,v));
+  });
+  activeListeners.push(()=>off(ir));
+
+  // Flow nodes
+  const fnr = ref(db, P.fnodes());
+  onValue(fnr, snap=>{
+    document.querySelectorAll('.fnode').forEach(e=>e.remove());
+    const d=snap.val()||{};
+    Object.entries(d).forEach(([k,v])=>renderFnode(k,v));
+    renderEdges();
+  });
+  activeListeners.push(()=>off(fnr));
+
+  // Flow edges
+  const fer = ref(db, P.fedges());
+  onValue(fer, snap=>{ renderEdges(); });
+  activeListeners.push(()=>off(fer));
+
+  // Lock
+  const lr = ref(db, P.lock);
+  onValue(lr, snap=>{ S.isLocked=snap.val()||false; applyLockUI(); });
+  activeListeners.push(()=>off(lr));
+
+  // Global perms for all workspaces
+  ['shared','own','group'].forEach(ws=>{
+    const pr = ref(db, P.gperms(ws));
+    onValue(pr, snap=>{
+      const p=snap.val();
+      if(p) S.perms[ws]=p;
+      if(ws===S.ws) { renderPermToggles(); updatePermDisp(); }
+    });
+    activeListeners.push(()=>off(pr));
+  });
+
+  // Individual perms
+  if(S.role!=='teacher'){
+    const ipr = ref(db, P.uperms(S.user));
+    onValue(ipr, snap=>{
+      const ip=snap.val();
+      if(!ip)return;
+      // merge overrides per ws
+      Object.keys(ip).forEach(ws=>{ if(S.perms[ws]) Object.assign(S.perms[ws],ip[ws]); });
+      updatePermDisp();
+    });
+    activeListeners.push(()=>off(ipr));
+  }
+
+  // Groups
+  const gr = ref(db, P.groups);
+  onValue(gr, snap=>{ renderGroupList(snap.val()||{}); });
+  activeListeners.push(()=>off(gr));
+}
+
+// ── PRESENCE ───────────────────────────────────────────────────────────────
+function setupPresence() {
+  const pRef = ref(db, P.presence(S.user));
+  set(pRef,{name:S.user,ws:S.ws,group:S.group,online:true,ts:Date.now()});
+  onDisconnect(pRef).remove();
+  onValue(ref(db,'presence'), snap=>{
+    const d=snap.val()||{};
+    onlineStudents = Object.values(d).filter(s=>s.online&&s.name!==S.user);
+    renderStudentList(onlineStudents);
+    if(S.currentTab==='elevkoll') updateElevkoll(onlineStudents);
+  });
+}
+
+// ── CANVAS ─────────────────────────────────────────────────────────────────
+function getPos(e) {
+  const r=canvas.getBoundingClientRect();
+  return{x:e.clientX-r.left, y:e.clientY-r.top};
+}
+function canDo(act) {
+  if(S.isLocked&&S.role!=='teacher')return false;
+  if(S.role==='teacher')return true;
+  return S.perms[S.ws]?.[act]!==false;
+}
+
+function onDown(e) {
+  if(S.tool==='select')return;
+  if(S.tool==='text'){if(!canDo('write')){toast('Skrivning låst');return;}placeTextInput(getPos(e));return;}
+  if(!canDo('draw')){toast('Ritning låst');return;}
+  S.drawing=true;
+  const p=getPos(e);S.lastX=p.x;S.lastY=p.y;
+  if(S.tool==='shape'||S.tool==='flow'&&S.fshape){
+    S.shapeStart=p;
+    shapeSnap=ctx.getImageData(0,0,canvas.width,canvas.height);
+  }else if(S.tool==='pen'||S.tool==='erase'){
+    ctx.beginPath();ctx.moveTo(p.x,p.y);
+  }
+}
+function onMove(e) {
+  if(!S.drawing)return;
+  const p=getPos(e);
+  if(S.tool==='pen'){
+    ctx.lineWidth=S.sz;ctx.strokeStyle=S.color;
+    ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.lineTo(p.x,p.y);ctx.stroke();
+    S.lastX=p.x;S.lastY=p.y;
+  }else if(S.tool==='erase'){
+    const r=S.sz*6;ctx.clearRect(p.x-r,p.y-r,r*2,r*2);
+  }else if((S.tool==='shape')&&S.shapeStart){
+    ctx.putImageData(shapeSnap,0,0);
+    drawCanvasShape(S.shapeStart,p);
+  }
+}
+function onUp() {
+  if(!S.drawing)return;
+  S.drawing=false;shapeSnap=null;
+  saveSnap();
+}
+
+function drawCanvasShape(a,b) {
+  ctx.save();ctx.strokeStyle=S.color;ctx.fillStyle=S.color+'33';ctx.lineWidth=S.sz;ctx.lineCap='round';
+  ctx.beginPath();
+  if(S.shape==='rect'){ctx.rect(a.x,a.y,b.x-a.x,b.y-a.y);ctx.fill();ctx.stroke();}
+  else if(S.shape==='circle'){const rx=Math.abs(b.x-a.x)/2,ry=Math.abs(b.y-a.y)/2;ctx.ellipse(a.x+(b.x-a.x)/2,a.y+(b.y-a.y)/2,rx,ry,0,0,Math.PI*2);ctx.fill();ctx.stroke();}
+  else if(S.shape==='line'){ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
+  else if(S.shape==='arrow'){
+    ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    const ang=Math.atan2(b.y-a.y,b.x-a.x),len=14;
+    ctx.beginPath();ctx.moveTo(b.x,b.y);
+    ctx.lineTo(b.x-len*Math.cos(ang-.4),b.y-len*Math.sin(ang-.4));
+    ctx.lineTo(b.x-len*Math.cos(ang+.4),b.y-len*Math.sin(ang+.4));
+    ctx.closePath();ctx.fillStyle=S.color;ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ── SNAPSHOT ───────────────────────────────────────────────────────────────
+function saveSnap() {
+  undoHist.push(canvas.toDataURL('image/png'));
+  if(undoHist.length>25)undoHist.shift();
+  clearTimeout(snapTimer);
+  snapTimer=setTimeout(()=>{
+    set(ref(db,P.snap()),{img:canvas.toDataURL('image/png'),by:S.user,ts:Date.now()});
+  },150);
+}
+function redrawCanvas() {
+  if(!ctx)return;
+  ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+  if(snapshotImg)ctx.drawImage(snapshotImg,0,0,canvas.clientWidth,canvas.clientHeight);
+}
+window.undo = function() {
+  if(!canDo('draw'))return;
+  if(!undoHist.length){toast('Inget att ångra');return;}
+  undoHist.pop();
+  const prev=undoHist[undoHist.length-1];
+  if(!prev){ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);set(ref(db,P.snap()),{img:'',by:S.user,ts:Date.now()});toast('Ångrat');return;}
+  const img=new Image();
+  img.onload=()=>{ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);ctx.drawImage(img,0,0,canvas.clientWidth,canvas.clientHeight);set(ref(db,P.snap()),{img:prev,by:S.user,ts:Date.now()});toast('Ångrat');};
+  img.src=prev;
+};
+
+// ── TEXT TOOL ──────────────────────────────────────────────────────────────
+function placeTextInput(pos) {
+  document.querySelectorAll('.cti').forEach(e=>e.remove());
+  const inp=document.createElement('input');
+  inp.type='text';inp.className='cti';
+  inp.style.left=pos.x+'px';inp.style.top=(pos.y-4)+'px';
+  inp.style.color=S.color;inp.style.fontSize=Math.max(12,S.sz*5)+'px';
+  inp.style.minWidth='120px';
+  document.getElementById('canvas-area').appendChild(inp);
+  inp.focus();
+  let done=false;
+  function commit(){
+    if(done)return;done=true;
+    const v=inp.value.trim();
+    if(v){
+      // Save as draggable text node in Firebase
+      push(ref(db,P.tnodes()),{text:v,x:pos.x,y:pos.y,color:S.color,sz:Math.max(12,S.sz*5),by:S.user,ts:Date.now()});
+    }
+    inp.remove();
+  }
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();commit();}if(e.key==='Escape'){inp.remove();done=true;}});
+  setTimeout(()=>inp.addEventListener('blur',commit),150);
+}
+
+function renderTnode(key,obj) {
+  const area=document.getElementById('canvas-area');
+  const div=document.createElement('div');
+  div.className='tnode';
+  div.style.left=(obj.x||80)+'px';div.style.top=(obj.y||80)+'px';
+  div.style.color=obj.color||'#18181b';div.style.fontSize=(obj.sz||14)+'px';
+  div.dataset.key=key;
+  // Make links clickable
+  const escaped=obj.text.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const linked=escaped.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" onclick="event.stopPropagation()">$1</a>');
+  div.innerHTML=linked+(canDo('move')||S.role==='teacher'?`<button class="tdl" onclick="delTnode('${key}')">×</button>`:'');
+  if(canDo('move')||S.role==='teacher') makeDraggable(div,key,P.tnodes());
+  area.appendChild(div);
+}
+window.delTnode=key=>remove(ref(db,P.tnodes()+'/'+key));
+
+// ── IMAGE OBJECTS ──────────────────────────────────────────────────────────
+window.trigImg=()=>document.getElementById('imgFile').click();
+window.handleImgFile=function(e){
+  const f=e.target.files[0];if(!f)return;e.target.value='';
+  const r=new FileReader();r.onload=ev=>saveImgObj(ev.target.result);r.readAsDataURL(f);
+};
+function handlePaste(e){
+  if(!canDo('draw'))return;
+  const items=(e.clipboardData||e.originalEvent?.clipboardData)?.items;
+  if(!items)return;
+  for(const item of items){if(item.type.startsWith('image/')){const b=item.getAsFile();const r=new FileReader();r.onload=ev=>saveImgObj(ev.target.result);r.readAsDataURL(b);break;}}
+}
+function saveImgObj(src){
+  push(ref(db,P.objs()+'_img'),{src,x:40+Math.random()*100,y:40+Math.random()*80,by:S.user,ts:Date.now()});
+  toast('Bild inklistrad!');
+}
+function renderImgObj(key,obj){
+  const area=document.getElementById('canvas-area');
+  const wrap=document.createElement('div');
+  wrap.className='iobj';wrap.style.left=(obj.x||40)+'px';wrap.style.top=(obj.y||40)+'px';wrap.dataset.key=key;
+  const img=document.createElement('img');img.src=obj.src;img.style.maxWidth='280px';img.draggable=false;
+  wrap.innerHTML=`<button class="idl" onclick="delIobj('${key}')">×</button>`;
+  wrap.insertBefore(img,wrap.firstChild);
+  if(canDo('move')||S.role==='teacher')makeDraggable(wrap,key,P.objs()+'_img');
+  area.appendChild(wrap);
+}
+window.delIobj=key=>remove(ref(db,P.objs()+'_img/'+key));
+
+// ── CANVAS OBJECTS ─────────────────────────────────────────────────────────
+function renderObj(key,obj){
+  const area=document.getElementById('canvas-area');
+  const div=document.createElement('div');
+  div.className=`cobj type-${obj.type}`;
+  div.style.left=(obj.x||80)+'px';div.style.top=(obj.y||80)+'px';
+  div.dataset.key=key;
+  const labels={q:'Fråga',task:'Uppgift',info:'Info'};
+  div.innerHTML=`<div class="oh">${labels[obj.type]||'Uppgift'}</div><div class="ob">${obj.text||''}</div>
+    ${(S.role==='teacher')?`<button class="odl" onclick="delObj('${key}')">×</button>`:''}`;
+  if(canDo('move')||S.role==='teacher'){div.classList.add('draggable');makeDraggable(div,key,P.objs());}
+  area.appendChild(div);
+}
+window.delObj=key=>remove(ref(db,P.objs()+'/'+key));
+window.addObj=function(){
+  const text=document.getElementById('taskText').value.trim();if(!text)return;
+  push(ref(db,P.objs()),{type:document.getElementById('taskType').value,text,x:80+Math.random()*180,y:60+Math.random()*120,by:S.user,ts:Date.now()});
+  document.getElementById('taskText').value='';toast('Tillagd!');
+};
+
+// ── FLOW ───────────────────────────────────────────────────────────────────
+let fshapeSelected='rect';
+window.setFShape=function(el,sh){
+  fshapeSelected=sh;
+  document.querySelectorAll('[data-fshape]').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+};
+
+// flow click listener added in init()
+
+function renderFnode(key,obj){
+  const area=document.getElementById('canvas-area');
+  const div=document.createElement('div');
+  div.className='fnode';div.style.left=(obj.x||80)+'px';div.style.top=(obj.y||60)+'px';div.dataset.key=key;
+  let inner='';
+  if(obj.shape==='diamond'){
+    inner=`<div class="fnode-inner diamond" style="border-color:${obj.color||'#2563eb'};background:${obj.color||'#2563eb'}18;color:${obj.color||'#2563eb'}"><span contenteditable="true" onblur="saveFnodeLabel('${key}',this)">${obj.label||'?'}</span></div>`;
+  }else if(obj.shape==='circle'){
+    inner=`<div class="fnode-inner circle-node" style="border-color:${obj.color||'#2563eb'};background:${obj.color||'#2563eb'}18;color:${obj.color||'#2563eb'}" contenteditable="true" onblur="saveFnodeLabel('${key}',this)">${obj.label||'Start'}</div>`;
+  }else{
+    inner=`<div class="fnode-inner" style="border-color:${obj.color||'#2563eb'};background:${obj.color||'#2563eb'}18;color:${obj.color||'#2563eb'}" contenteditable="true" onblur="saveFnodeLabel('${key}',this)">${obj.label||'Steg'}</div>`;
+  }
+  div.innerHTML=`${inner}
+    <div class="fport fport-t" data-node="${key}" data-port="t" onmousedown="startConnect(event,'${key}','t')"></div>
+    <div class="fport fport-b" data-node="${key}" data-port="b" onmousedown="startConnect(event,'${key}','b')"></div>
+    <div class="fport fport-l" data-node="${key}" data-port="l" onmousedown="startConnect(event,'${key}','l')"></div>
+    <div class="fport fport-r" data-node="${key}" data-port="r" onmousedown="startConnect(event,'${key}','r')"></div>
+    <button class="fdl" onclick="delFnode('${key}')">×</button>`;
+  makeDraggable(div, key, P.fnodes());
+  area.appendChild(div);
+}
+window.saveFnodeLabel=function(key,el){
+  update(ref(db,P.fnodes()+'/'+key),{label:el.textContent.trim()});
+};
+window.delFnode=function(key){
+  remove(ref(db,P.fnodes()+'/'+key));
+  // Remove edges connected to this node
+  onValue(ref(db,P.fedges()),snap=>{
+    const d=snap.val()||{};
+    Object.entries(d).forEach(([ek,ev])=>{if(ev.from===key||ev.to===key)remove(ref(db,P.fedges()+'/'+ek));});
+  },{onlyOnce:true});
+};
+
+// ── CONNECT NODES ──────────────────────────────────────────────────────────
+let connecting=null,connLine=null;
+window.startConnect=function(e,nodeKey,port){
+  if(S.tool!=='flow')return;
+  e.stopPropagation();e.preventDefault();
+  connecting={nodeKey,port};
+  const svgEl=document.getElementById('flow-svg');
+  connLine=document.createElementNS('http://www.w3.org/2000/svg','line');
+  connLine.setAttribute('stroke',S.color);connLine.setAttribute('stroke-width','2');connLine.setAttribute('stroke-dasharray','5,4');
+  svgEl.appendChild(connLine);
+  const startPos=getPortPos(nodeKey,port);
+  connLine.setAttribute('x1',startPos.x);connLine.setAttribute('y1',startPos.y);
+  connLine.setAttribute('x2',startPos.x);connLine.setAttribute('y2',startPos.y);
+  document.addEventListener('mousemove',onConnMove);
+  document.addEventListener('mouseup',onConnUp);
+};
+function onConnMove(e){
+  if(!connLine)return;
+  const r=document.getElementById('canvas-area').getBoundingClientRect();
+  connLine.setAttribute('x2',e.clientX-r.left);connLine.setAttribute('y2',e.clientY-r.top);
+}
+function onConnUp(e){
+  document.removeEventListener('mousemove',onConnMove);document.removeEventListener('mouseup',onConnUp);
+  if(connLine){connLine.remove();connLine=null;}
+  if(!connecting)return;
+  // Find if we dropped on a port
+  const el=document.elementFromPoint(e.clientX,e.clientY);
+  if(el&&el.classList.contains('fport')&&el.dataset.node!==connecting.nodeKey){
+    push(ref(db,P.fedges()),{from:connecting.nodeKey,fromPort:connecting.port,to:el.dataset.node,toPort:el.dataset.port,color:S.color,ts:Date.now()});
+  }
+  connecting=null;
+}
+function getPortPos(nodeKey,port){
+  const el=document.querySelector(`.fnode[data-key="${nodeKey}"]`);
+  if(!el)return{x:0,y:0};
+  const r=el.getBoundingClientRect();
+  const ar=document.getElementById('canvas-area').getBoundingClientRect();
+  const cx=r.left-ar.left+r.width/2, cy=r.top-ar.top+r.height/2;
+  const hw=r.width/2, hh=r.height/2;
+  if(port==='t')return{x:cx,y:cy-hh};
+  if(port==='b')return{x:cx,y:cy+hh};
+  if(port==='l')return{x:cx-hw,y:cy};
+  return{x:cx+hw,y:cy};
+}
+function renderEdges(){
+  const svg=document.getElementById('flow-svg');
+  svg.querySelectorAll('.flow-edge').forEach(e=>e.remove());
+  onValue(ref(db,P.fedges()),snap=>{
+    const d=snap.val()||{};
+    Object.entries(d).forEach(([k,v])=>{
+      const from=getPortPos(v.from,v.fromPort);
+      const to=getPortPos(v.to,v.toPort);
+      if(!from.x&&!to.x)return;
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      const dx=Math.abs(to.x-from.x)*0.5;
+      path.setAttribute('d',`M${from.x},${from.y} C${from.x+dx},${from.y} ${to.x-dx},${to.y} ${to.x},${to.y}`);
+      path.setAttribute('class','flow-edge');
+      path.setAttribute('stroke',v.color||'#2563eb');
+      path.setAttribute('marker-end','url(#arrow-head)');
+      path.dataset.key=k;
+      path.style.cursor='pointer';
+      path.addEventListener('click',()=>{if(confirm('Ta bort kopplingen?'))remove(ref(db,P.fedges()+'/'+k));});
+      svg.appendChild(path);
+    });
+  },{onlyOnce:true});
+}
+
+// ── DRAGGABLE ──────────────────────────────────────────────────────────────
+function makeDraggable(el,key,path){
+  el.addEventListener('mousedown',e=>{
+    if(e.target.classList.contains('odl')||e.target.classList.contains('tdl')||e.target.classList.contains('fdl')||e.target.classList.contains('idl'))return;
+    if(e.target.classList.contains('fport'))return;
+    if(e.target.hasAttribute('contenteditable')&&e.target.getAttribute('contenteditable')==='true')return;
+    if(!canDo('move')&&S.role!=='teacher')return;
+    e.stopPropagation();
+    const sx=e.clientX-el.offsetLeft,sy=e.clientY-el.offsetTop;
+    function mv(e2){el.style.left=(e2.clientX-sx)+'px';el.style.top=(e2.clientY-sy)+'px';if(el.classList.contains('fnode'))renderEdges();}
+    function up(){
+      document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);
+      update(ref(db,path+'/'+key),{x:el.offsetLeft,y:el.offsetTop});
+      if(el.classList.contains('fnode'))renderEdges();
+    }
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+}
+
+// ── TOOLS ──────────────────────────────────────────────────────────────────
+window.setTool=function(t){
+  S.tool=t;
+  document.querySelectorAll('.tb[id^="tool-"]').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('tool-'+t);if(el)el.classList.add('active');
+  document.getElementById('shapeOpts').style.display=t==='shape'?'flex':'none';
+  document.getElementById('flowOpts').style.display=t==='flow'?'flex':'none';
+  const curMap={select:'c-select',pen:'c-pen',text:'c-text',shape:'c-shape',erase:'c-erase',flow:'c-flow'};
+  canvas.className=(curMap[t]||'c-select')+(S.isLocked&&S.role!=='teacher'?' locked':'');
+};
+window.setColor=function(el){S.color=el.dataset.color;document.querySelectorAll('.csw').forEach(s=>s.classList.remove('active'));el.classList.add('active');};
+window.setSz=function(el,sz){S.sz=sz;document.querySelectorAll('.sbtn[data-sz]').forEach(b=>b.classList.remove('active'));el.classList.add('active');};
+window.setShape=function(el,sh){S.shape=sh;document.querySelectorAll('[data-shape]').forEach(b=>b.classList.remove('active'));el.classList.add('active');};
+
+// ── LOCK ───────────────────────────────────────────────────────────────────
+window.toggleLock=function(){
+  if(S.role!=='teacher'){toast('Bara läraren kan låsa');return;}
+  set(ref(db,P.lock),!S.isLocked);
+  toast(!S.isLocked?'Ytan låst 🔒':'Ytan upplåst 🔓');
+};
+function applyLockUI(){
+  const btn=document.getElementById('lockBtn');
+  btn.className='lbtn '+(S.isLocked?'locked':'unlocked');
+  btn.innerHTML=S.isLocked
+    ?'<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Låst'
+    :'<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Upplåst';
+  if(S.isLocked&&S.role!=='teacher')canvas.classList.add('locked');
+  else canvas.classList.remove('locked');
+}
+
+// ── PERMISSIONS ────────────────────────────────────────────────────────────
+window.renderPermToggles=function(){
+  const ws=document.getElementById('permWs').value;
+  const p=S.perms[ws]||{draw:true,write:true,move:true};
+  ['draw','write','move'].forEach(k=>{
+    const btn=document.getElementById('tog-'+k);
+    if(btn)btn.className='tog '+(p[k]!==false?'on':'');
+  });
+};
+window.setGlobalPerm=function(perm,btn){
+  if(S.role!=='teacher')return;
+  const ws=document.getElementById('permWs').value;
+  const cur=S.perms[ws]||{};
+  const newVal=!(cur[perm]!==false);
+  update(ref(db,P.gperms(ws)),{[perm]:newVal});
+};
+function updatePermDisp(){
+  const d=document.getElementById('permDisp');if(!d)return;
+  const p=S.perms[S.ws]||{};
+  d.innerHTML=['draw','write','move'].map((k,i)=>{
+    const lbl=['Rita','Skriva','Flytta'][i];
+    return `<div style="display:flex;align-items:center;gap:6px;font-size:12px;padding:3px 0;">
+      <span style="width:7px;height:7px;border-radius:50%;background:${p[k]!==false?'var(--green)':'var(--red)'};flex-shrink:0;"></span>
+      ${lbl}: ${p[k]!==false?'tillåtet':'ej tillåtet'}
+    </div>`;
+  }).join('');
+}
+
+// ── INDIVIDUAL PERMS ───────────────────────────────────────────────────────
+window.focusStudent=function(name){
+  const panel=document.getElementById('indivPanel');
+  panel.style.display='block';
+  onValue(ref(db,P.uperms(name)),snap=>{
+    const ip=snap.val()||{};
+    panel.innerHTML=`<div class="ip-panel">
+      <div class="ip-title">Individuellt: ${name}<button class="ip-close" onclick="closeIndiv()">×</button></div>
+      ${ ['shared','own','group'].map(ws=>`
+        <div class="ip-ws">${{shared:'Delad yta',own:'Egen yta',group:'Gruppyta'}[ws]}</div>
+        ${['draw','write','move'].map(k=>`
+          <div class="ip-row">
+            <span>${{draw:'Rita',write:'Skriva',move:'Flytta'}[k]}</span>
+            <button class="tog ${(ip[ws]?.[k]===false)?'':'on'}" onclick="setIndivPerm('${name}','${ws}','${k}',this)"></button>
+          </div>`).join('')}`).join('') }
+      <button class="btn d" style="width:100%;margin-top:8px;font-size:11px;" onclick="clearIndiv('${name}')">Återställ</button>
+    </div>`;
+  },{onlyOnce:true});
+};
+window.closeIndiv=()=>{ document.getElementById('indivPanel').style.display='none'; };
+window.setIndivPerm=function(name,ws,perm,btn){
+  const newVal=!btn.classList.contains('on');
+  btn.className='tog '+(newVal?'on':'');
+  update(ref(db,P.uperms(name)+'/'+ws),{[perm]:newVal});
+};
+window.clearIndiv=function(name){ remove(ref(db,P.uperms(name))); closeIndiv(); toast('Återställt'); };
+
+// ── STUDENT LIST ───────────────────────────────────────────────────────────
+function renderStudentList(students){
+  const el=document.getElementById('studentList');if(!el)return;
+  if(!students.length){el.innerHTML='<div class="no-s">Inga elever online</div>';return;}
+  el.innerHTML=students.map((s,i)=>`
+    <div class="si" onclick="focusStudent('${s.name}')">
+      <div class="av" style="background:${AC[i%7]}22;color:${AC[i%7]}">${s.name.slice(0,2)}</div>
+      <div class="sn">${s.name}</div>
+      <span class="sbadge b-${(s.ws||'sh').slice(0,2)}">${{shared:'Delad',own:'Egen',group:s.group||'Grupp'}[s.ws]||'Delad'}</span>
+    </div>`).join('');
+}
+
+// ── GROUPS ─────────────────────────────────────────────────────────────────
+window.shuffleGroups=function(){
+  const n=parseInt(document.getElementById('groupCount').value)||3;
+  const students=onlineStudents.map(s=>s.name);
+  if(students.length<2){toast('För få elever online');return;}
+  const shuffled=[...students].sort(()=>Math.random()-.5);
+  const groups={};
+  for(let i=0;i<n;i++)groups[`Grupp ${i+1}`]=[];
+  shuffled.forEach((s,i)=>groups[`Grupp ${i%n+1}`].push(s));
+  set(ref(db,P.groups),groups);
+  // Update each student's group in presence
+  Object.entries(groups).forEach(([gname,members])=>{
+    members.forEach(m=>update(ref(db,P.presence(m)),{group:gname,ws:'group'}));
+  });
+  toast(`${n} grupper skapade!`);
+};
+window.clearGroups=function(){
+  remove(ref(db,P.groups));
+  onlineStudents.forEach(s=>update(ref(db,P.presence(s.name)),{group:'',ws:'shared'}));
+  toast('Grupper rensade');
+};
+function renderGroupList(groups){
+  const el=document.getElementById('groupList');if(!el)return;
+  if(!Object.keys(groups).length){el.innerHTML='<div class="no-s">Inga grupper ännu</div>';return;}
+  el.innerHTML=Object.entries(groups).map(([name,members],i)=>`
+    <div class="gp-card">
+      <div class="gp-name"><span>${name}</span><span style="font-size:10px;color:var(--muted2);font-weight:400;">${Object.values(members).length} elever</span></div>
+      <div class="gp-members">${Object.values(members).join(', ')}</div>
+    </div>`).join('');
+}
+
+// ── CHAT ───────────────────────────────────────────────────────────────────
+let chatListener=null;
+function setupChat(){
+  if(chatListener){off(ref(db,P.chat(S.group)));chatListener=null;}
+  const cr=ref(db,P.chat(S.group));
+  chatListener=onValue(cr,snap=>{
+    const d=snap.val()||{};
+    const msgs=Object.values(d).sort((a,b)=>a.ts-b.ts);
+    const el=document.getElementById('chatMsgs');if(!el)return;
+    el.innerHTML=msgs.map(m=>`
+      <div class="chat-msg ${m.by===S.user?'mine':''}">
+        <div class="cm-who">${m.by}</div>
+        ${m.text}
+      </div>`).join('');
+    el.scrollTop=el.scrollHeight;
+  });
+}
+window.sendChat=function(){
+  const inp=document.getElementById('chatInput');
+  const text=inp.value.trim();if(!text)return;
+  push(ref(db,P.chat(S.group)),{by:S.user,text,ts:Date.now()});
+  inp.value='';
+};
+
+// ── ELEVKOLL ───────────────────────────────────────────────────────────────
+function updateElevkoll(students){
+  const grid=document.getElementById('ekGrid');if(!grid)return;
+  const names=students.map(s=>s.name);
+  document.querySelectorAll('.ek-card').forEach(card=>{
+    if(!names.includes(card.dataset.student)){
+      if(ekListeners[card.dataset.student]){ekListeners[card.dataset.student]();delete ekListeners[card.dataset.student];}
+      card.remove();
+    }
+  });
+  students.forEach((s,i)=>{
+    if(grid.querySelector(`[data-student="${s.name}"]`))return;
+    const card=document.createElement('div');
+    card.className='ek-card';card.dataset.student=s.name;
+    const color=AC[i%7];
+    const sid=s.name.replace(/[^a-zA-Z0-9]/g,'_');
+    card.innerHTML=`
+      <div class="ek-head">
+        <div class="ek-av" style="background:${color}33;color:${color}">${s.name.slice(0,2)}</div>
+        <div class="ek-name">${s.name}</div>
+        <div class="ek-ws">
+          <button class="ek-ws-btn active" data-ws="own" onclick="switchEkWs(this,'${s.name}','own','${s.group||''}')">Egen</button>
+          ${s.group?`<button class="ek-ws-btn" data-ws="group" onclick="switchEkWs(this,'${s.name}','group','${s.group||''}')">Grupp</button>`:''}
+        </div>
+      </div>
+      <div class="ek-wrap" id="ekwrap-${sid}"><div class="ek-empty">Ingen ritning än</div></div>`;
+    grid.appendChild(card);
+    listenEkSnap(s.name, s.name, 'own', s.group||'');
+  });
+}
+
+function listenEkSnap(studentName, displayName, ws, group){
+  const sid=displayName.replace(/[^a-zA-Z0-9]/g,'_');
+  if(ekListeners[displayName]){ekListeners[displayName]();delete ekListeners[displayName];}
+  const snapPath = ws==='own' ? `ws/own/${studentName}/snapshot`
+    : ws==='group' ? `ws/group/${group||'default'}/snapshot`
+    : 'ws/shared/snapshot';
+  const sr=ref(db,snapPath);
+  onValue(sr,snap=>{
+    const d=snap.val();
+    const wrap=document.getElementById('ekwrap-'+sid);if(!wrap)return;
+    if(!d||!d.img){wrap.innerHTML='<div class="ek-empty">Ingen ritning än</div>';return;}
+    wrap.innerHTML=`<img src="${d.img}" style="width:100%;height:100%;object-fit:contain;display:block;" alt=""/>`;
+  });
+  ekListeners[displayName]=()=>off(sr);
+}
+
+window.switchEkWs=function(btn,studentName,ws,group){
+  const card=btn.closest('.ek-card');
+  card.querySelectorAll('.ek-ws-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  listenEkSnap(studentName,studentName,ws,group);
+};
+
+// ── WORKSPACE SWITCH ───────────────────────────────────────────────────────
+window.switchWS=function(ws){
+  S.ws=ws;
+  snapshotImg=null;undoHist=[];
+  ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+  document.querySelectorAll('.cobj,.tnode,.iobj,.fnode').forEach(e=>e.remove());
+  document.getElementById('flow-svg').querySelectorAll('.flow-edge').forEach(e=>e.remove());
+  const labels={shared:'Delad yta',own:'Min yta',group:`Grupp: ${S.group||'—'}`};
+  const chips={shared:'DELAD',own:'MIN YTA',group:'GRUPP'};
+  const cls={shared:'b-sh',own:'b-ow',group:'b-gr'};
+  document.getElementById('wsLbl').textContent=labels[ws];
+  const chip=document.getElementById('wsChip');
+  chip.textContent=chips[ws];chip.className='ws-chip '+cls[ws];
+  update(ref(db,P.presence(S.user)),{ws,group:S.group});
+  setupListeners();
+  updatePermDisp();
+  if(ws==='group')setupChat();
+  toast(labels[ws]);
+};
+
+// ── TABS ───────────────────────────────────────────────────────────────────
+window.goTab=function(tab,btn){
+  S.currentTab=tab;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  ['kontroll','elever','grupper','elevkoll','minyta','chatt'].forEach(t=>{
+    const el=document.getElementById('tab-'+t);if(el)el.style.display=t===tab?'':'none';
+  });
+  const ek=document.getElementById('ek-area');
+  const ca=document.getElementById('canvas-area');
+  if(tab==='elevkoll'){
+    ek.classList.add('show');ca.style.display='none';
+    // Fetch students immediately
+    onValue(ref(db,'presence'),snap=>{
+      const d=snap.val()||{};
+      const students=Object.values(d).filter(s=>s.online&&s.name!==S.user);
+      if(!students.length){document.getElementById('ekGrid').innerHTML='<div style="text-align:center;padding:30px;color:var(--muted2);font-size:13px;">Inga elever inloggade</div>';}
+      else updateElevkoll(students);
+    },{onlyOnce:true});
+  }else{
+    ek.classList.remove('show');ca.style.display='';
+  }
+  if(tab==='chatt')setupChat();
+};
+
+// ── MISC ───────────────────────────────────────────────────────────────────
+window.setBg=function(){
+  const url=document.getElementById('bgUrl').value.trim();if(!url)return;
+  const img=new Image();img.crossOrigin='anonymous';
+  img.onload=()=>{ctx.drawImage(img,0,0,canvas.clientWidth,canvas.clientHeight);saveSnap();toast('Bakgrund satt!');};
+  img.onerror=()=>toast('Kunde inte ladda bilden');img.src=url;
+};
+window.clearAll=function(){
+  if(!confirm('Rensa hela ytan?'))return;
+  ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+  document.querySelectorAll('.cobj,.tnode,.iobj,.fnode').forEach(e=>e.remove());
+  remove(ref(db,wsRoot()));undoHist=[];toast('Ytan rensad!');
+};
+window.exportPNG=function(){
+  const link=document.createElement('a');link.download='klasstavlan.png';link.href=canvas.toDataURL();link.click();
+};
+
+// ── TOAST ──────────────────────────────────────────────────────────────────
+window.toast=function(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);
+};
+
+// ── LOGIN ──────────────────────────────────────────────────────────────────
+// expose startApp for plain-script login handler
+window._startApp=function(name,isTeacher,ws,group){
+  S.user=name;S.ws=ws;S.group=group;S.role=isTeacher?'teacher':'student';
+  document.getElementById('gate').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('sbSub').textContent=isTeacher?'Lärarvy':name;
+  document.getElementById('sNameDisp').textContent=name;
+  document.getElementById('sModeDisp').textContent={shared:'Delad yta',own:'Min yta',group:'Grupp: '+group}[ws];
+  if(isTeacher){
+    document.getElementById('teacherTabs').style.display='flex';
+    document.getElementById('studentTabs').style.display='none';
+    document.getElementById('tab-kontroll').style.display='';
+    ['elever','grupper','elevkoll','minyta','chatt'].forEach(t=>{const e=document.getElementById('tab-'+t);if(e)e.style.display='none';});
+  }else{
+    document.getElementById('teacherTabs').style.display='none';
+    document.getElementById('studentTabs').style.display='flex';
+    document.getElementById('tab-minyta').style.display='';
+    ['kontroll','elever','grupper','elevkoll','chatt'].forEach(t=>{const e=document.getElementById('tab-'+t);if(e)e.style.display='none';});
+  }
+  init();
+  if(ws==='group')setupChat();
+  toast('Välkommen, '+name+'!');
+};
+</script>
+
+<script>
+var loginMode='shared';
+function pickMode(btn,mode){
+  loginMode=mode;
+  document.querySelectorAll('.mc-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.getElementById('gGroup').style.display=mode==='group'?'block':'none';
+}
+function enterApp(){
+  var name=document.getElementById('gName').value.trim().toUpperCase();
+  var pin=document.getElementById('gPin').value.trim();
+  var group=document.getElementById('gGroup').value.trim().toUpperCase();
+  var err=document.getElementById('gErr');
+  if(!name){err.textContent='Ange ditt namn.';return;}
+  if(!pin){err.textContent='Ange PIN.';return;}
+  var isTeacher=pin==='LARARE';
+  if(!isTeacher&&pin!=='1234'){err.textContent='Fel PIN-kod.';return;}
+  if(window._startApp){window._startApp(name,isTeacher,loginMode,group);}
+  else{err.textContent='Sidan laddas fortfarande, försök igen.';}
+}
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('gName').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('gPin').focus();});
+  document.getElementById('gPin').addEventListener('keydown',function(e){if(e.key==='Enter')enterApp();});
+});
+</script>
+</body>
+</html>
